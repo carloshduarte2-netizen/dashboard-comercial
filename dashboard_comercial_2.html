@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Comercial — Pipeline Bitrix</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F7F6F2;--surface:#fff;--s2:#F0EEE8;--border:rgba(0,0,0,.08);--text:#1A1A18;--t2:#6B6B65;--t3:#9E9E98;--blue:#2563EB;--green:#0F9E6E;--amber:#C47A12;--red:#D03B3B;--r:12px;--rs:8px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--text);color:#fff;padding:28px 40px 24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.header h1{font-size:22px;font-weight:600;letter-spacing:-.3px;color:#fff}
+.header p{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px}
+.hright{display:flex;align-items:center;gap:10px}
+.ubtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 16px;border-radius:var(--rs);cursor:pointer;transition:background .15s}
+.ubtn:hover{background:rgba(255,255,255,.18)}
+#fileInput{display:none}
+.lupd{font-size:12px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 40px;overflow-x:auto}
+.tab{font-size:13px;font-weight:500;color:var(--t3);padding:14px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+.tab:hover{color:var(--t2)}.tab.active{color:var(--text);border-bottom-color:var(--blue)}
+.tab.red{}.tab.red.active{border-bottom-color:var(--red)}
+.main{padding:28px 40px 48px;max-width:1200px}
+.page{display:none}.page.active{display:block}
+.frow{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.frow label{font-size:12px;color:var(--t3)}
+select.fil{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;cursor:pointer}
+.kgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.blue::before{background:var(--blue)}.kpi.green::before{background:var(--green)}.kpi.amber::before{background:var(--amber)}.kpi.gray::before{background:#aaa}.kpi.red::before{background:var(--red)}
+.klabel{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.kval{font-size:24px;font-weight:600;color:var(--text);letter-spacing:-.5px;line-height:1}
+.kval.danger{color:var(--red)}
+.ksub{font-size:12px;color:var(--t3);margin-top:6px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.cgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.cfull{grid-column:1/-1}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.card.danger-card{border-color:rgba(208,59,59,.2);background:#FFFAFA}
+.ctitle{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.csub{font-size:13px;color:var(--t2);margin-bottom:20px}
+.leg{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;font-size:12px;color:var(--t2)}
+.leg span{display:flex;align-items:center;gap:6px}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.cwrap{position:relative;width:100%}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;padding:8px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th.c{text-align:center}th.r{text-align:right}
+td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--t2);vertical-align:middle}
+td.nm{font-weight:500;color:var(--text)}td.c{text-align:center}td.r{text-align:right}
+td.mh{background:var(--s2);font-weight:600;color:var(--text);font-size:12px;padding:6px 14px}
+tr:last-child td{border-bottom:none}
+tr:not(.mr):hover td{background:var(--s2)}
+.pill{display:inline-block;min-width:28px;text-align:center;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:500}
+.p0{color:var(--t3)}.pl{background:#EFF6FF;color:#1D4ED8}.pm{background:#D1FAE5;color:#065F46}.ph{background:#FEF3C7;color:#92400E}.pt{background:#FEE2E2;color:#991B1B}
+.fase-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.fb-0{background:#EFF6FF;color:#1D4ED8}.fb-1{background:#FEF3C7;color:#92400E}.fb-2{background:#D1FAE5;color:#065F46}.fb-3{background:#F3E8FF;color:#6B21A8}.fb-4{background:#FEE2E2;color:#991B1B}.fb-5{background:#ECFDF5;color:#065F46}.fb-6{background:#FFF7ED;color:#C2410C}.fb-7{background:#F0FDF4;color:#166534}.fb-8{background:#EFF6FF;color:#1D4ED8}
+.perdido-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;background:#FEE2E2;color:#991B1B}
+.motivo-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;background:#FFF7ED;color:#C2410C}
+.bi{display:flex;align-items:center;gap:8px}
+.bt{flex:1;height:6px;background:var(--s2);border-radius:3px;overflow:hidden;min-width:60px}
+.bf{height:100%;border-radius:3px;background:var(--blue)}.bf.g{background:var(--green)}.bf.r{background:var(--red)}
+.resp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.resp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.resp-card-header{background:var(--text);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.resp-card-header span{font-size:14px;font-weight:500}
+.resp-card-header small{font-size:12px;opacity:.5}
+.emp-row{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);gap:8px}
+.emp-row:last-child{border-bottom:none}
+.emp-name{font-size:13px;color:var(--text);font-weight:500;line-height:1.4;flex:1}
+.emp-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.search-wrap{position:relative;margin-bottom:20px}
+.search-wrap input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:8px 14px 8px 36px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
+.empty{padding:40px;text-align:center;color:var(--t3);font-size:13px}
+.taxa-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:8px;gap:2px}
+.taxa-ativo{background:var(--green)}.taxa-perdido{background:var(--red)}
+.footer{padding:16px 40px;font-size:12px;color:var(--t3);border-top:1px solid var(--border)}
+@media(max-width:900px){.kgrid{grid-template-columns:repeat(3,1fr)}.cgrid3{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.header{padding:20px;flex-direction:column;align-items:flex-start}.main{padding:20px}.kgrid{grid-template-columns:repeat(2,1fr)}.cgrid,.cgrid3{grid-template-columns:1fr}.cfull{grid-column:1}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>Dashboard Comercial</h1><p id="hsub">Pipeline Backoffice — dados carregados</p></div>
+  <div class="hright">
+    <span class="lupd" id="lupd"></span>
+    <button class="ubtn" onclick="document.getElementById('fileInput').click()">↑ Atualizar Excel</button>
+    <input type="file" id="fileInput" accept=".xls,.xlsx" onchange="loadFile(event)">
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showPage('ov',this)">Visão geral</div>
+  <div class="tab" onclick="showPage('mx',this)">Responsável × Etapa</div>
+  <div class="tab" onclick="showPage('mo',this)">Consolidado mensal</div>
+  <div class="tab" onclick="showPage('em',this)">Empresas por responsável</div>
+  <div class="tab red" onclick="showPage('pd',this)">Negócios perdidos</div>
+</div>
+<div class="main">
+
+  <!-- VISÃO GERAL -->
+  <div class="page active" id="page-ov">
+    <div class="frow">
+      <label>Responsável:</label>
+      <select class="fil" id="fOvResp" onchange="renderOv()"><option value="">Todos</option></select>
+    </div>
+    <div class="kgrid">
+      <div class="kpi blue"><div class="klabel">Negócios ativos</div><div class="kval" id="kN">—</div><div class="ksub">Pipeline em aberto</div></div>
+      <div class="kpi green"><div class="klabel">Limite esperado</div><div class="kval" id="kL">—</div><div class="ksub">Soma do pipeline</div></div>
+      <div class="kpi amber"><div class="klabel">Faturamento cedentes</div><div class="kval" id="kF">—</div><div class="ksub">Soma faturamento</div></div>
+      <div class="kpi red"><div class="klabel">Negócios perdidos</div><div class="kval danger" id="kP">—</div><div class="ksub" id="kPsub">—</div></div>
+      <div class="kpi gray"><div class="klabel">Taxa de conversão</div><div class="kval" id="kT">—</div><div class="ksub">Ativos / total</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="card">
+        <div class="ctitle">Funil por fase</div><div class="csub">Apenas negócios ativos</div>
+        <div class="leg"><span><span class="ldot" style="background:#2563EB"></span>Negócios</span></div>
+        <div class="cwrap" style="height:280px"><canvas id="cFunil" role="img" aria-label="Funil">Funil</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Ativos vs Perdidos</div><div class="csub">Distribuição do total de negócios</div>
+        <div class="cwrap" style="height:280px"><canvas id="cPie" role="img" aria-label="Ativos vs Perdidos">Ativos vs Perdidos</canvas></div>
+      </div>
+      <div class="card cfull">
+        <div class="ctitle">Performance por responsável</div><div class="csub">Negócios ativos, perdidos e limite esperado</div>
+        <div class="leg">
+          <span><span class="ldot" style="background:#0F9E6E"></span>Ativos</span>
+          <span><span class="ldot" style="background:#D03B3B"></span>Perdidos</span>
+          <span><span class="ldot" style="background:#2563EB"></span>Limite esperado (R$M)</span>
+        </div>
+        <div class="cwrap" style="height:340px"><canvas id="cResp" role="img" aria-label="Performance">Performance</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Evolução semanal</div><div class="csub">Novos negócios por semana</div>
+        <div class="leg"><span><span class="ldot" style="background:#C47A12"></span>Novos negócios</span></div>
+        <div class="cwrap" style="height:220px"><canvas id="cSem" role="img" aria-label="Semanal">Semanal</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Top motivos de perda</div><div class="csub">Principais razões de negócios perdidos</div>
+        <div class="cwrap" style="height:220px"><canvas id="cMotivo" role="img" aria-label="Motivos">Motivos</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATRIZ -->
+  <div class="page" id="page-mx">
+    <div class="frow">
+      <label>Mês:</label>
+      <select class="fil" id="fMxMes" onchange="renderMx()"><option value="">Todos</option></select>
+      <label style="margin-left:12px">Responsável:</label>
+      <select class="fil" id="fMxResp" onchange="renderMx()"><option value="">Todos</option></select>
+    </div>
+    <div class="card cfull">
+      <div class="ctitle">Responsável × Etapa</div><div class="csub">Quantidade de negócios ativos por comercial em cada fase</div>
+      <div class="tscroll"><table id="tMx"></table></div>
+    </div>
+  </div>
+
+  <!-- MENSAL -->
+  <div class="page" id="page-mo">
+    <div class="frow">
+      <label>Mês:</label>
+      <select class="fil" id="fMoMes" onchange="renderMo()"><option value="">Todos</option></select>
+      <label style="margin-left:12px">Responsável:</label>
+      <select class="fil" id="fMoResp" onchange="renderMo()"><option value="">Todos</option></select>
+    </div>
+    <div class="card cfull">
+      <div class="ctitle">Consolidado mensal</div><div class="csub">Negócios e limite esperado por responsável/mês</div>
+      <div class="tscroll"><table id="tMo"></table></div>
+    </div>
+  </div>
+
+  <!-- EMPRESAS -->
+  <div class="page" id="page-em">
+    <div class="frow">
+      <label>Responsável:</label>
+      <select class="fil" id="fEmResp" onchange="renderEm()"><option value="">Todos</option></select>
+      <label style="margin-left:12px">Mês:</label>
+      <select class="fil" id="fEmMes" onchange="renderEm()"><option value="">Todos</option></select>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="empSearch" placeholder="Buscar empresa..." oninput="renderEm()">
+    </div>
+    <div id="empContainer"></div>
+  </div>
+
+  <!-- PERDIDOS -->
+  <div class="page" id="page-pd">
+    <div class="frow">
+      <label>Responsável:</label>
+      <select class="fil" id="fPdResp" onchange="renderPd()"><option value="">Todos</option></select>
+      <label style="margin-left:12px">Motivo:</label>
+      <select class="fil" id="fPdMotivo" onchange="renderPd()"><option value="">Todos</option></select>
+      <label style="margin-left:12px">Mês:</label>
+      <select class="fil" id="fPdMes" onchange="renderPd()"><option value="">Todos</option></select>
+    </div>
+    <div class="cgrid3" id="pdKpis"></div>
+    <div class="cgrid">
+      <div class="card">
+        <div class="ctitle">Perdidos por motivo</div><div class="csub">Ranking de causas de perda</div>
+        <div class="cwrap" style="height:300px"><canvas id="cPdMotivo" role="img" aria-label="Motivos perda">Motivos</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Perdidos por responsável</div><div class="csub">Quantos negócios cada comercial perdeu</div>
+        <div class="cwrap" style="height:300px"><canvas id="cPdResp" role="img" aria-label="Perdidos resp">Perdidos resp</canvas></div>
+      </div>
+      <div class="card cfull">
+        <div class="ctitle">Lista de negócios perdidos</div><div class="csub" id="pdSubtitle">Todos os negócios com fase Perdido</div>
+        <div class="tscroll"><table id="tPd"></table></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="footer">Dashboard Comercial · Exportado do Bitrix24 · Para atualizar, clique em "Atualizar Excel"</div>
+<script>
+let ROWS = [{"resp": "Carlos", "empresa": "TROPICAL ESTUFAS AGRICOLAS LTDA", "fase": "ANÁLISE BACKOFFICE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "L.G.B. EIRAS LTDA", "fase": "ANÁLISE BACKOFFICE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Adriano", "empresa": "TICINO INDUSTRIA E COMERCIO DE LATICINIOS LTDA", "fase": "ANÁLISE BACKOFFICE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "MASP VACUO COMERCIAL LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "MASP INDUSTRIA COMERCIO E MANUTENÇÃO EM BOMBAS DE VÁCUO", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "PISO X ENGENHARIA E CONSTRUCOES LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Liminar sem justificativa", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 600000.0, "fat": 2000000.0}, {"resp": "Murilo", "empresa": "TORG METAL LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "FS MONTAGENS E EVENTOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Empresa já possuí cadastro com a FS", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Fs Tatui", "empresa": "Tecno Pox", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-04", "mesLabel": "Apr/2026", "semana": "W14", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "LH BUSSE GALLAO INDUSTRIA COMERCIO IMPORTACAO E EXPORTACAO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2025-12", "mesLabel": "Dec/2025", "semana": "W49", "limite": 0.0, "fat": 0.0}, {"resp": "Adriana", "empresa": "MULTCOLLOR BENEFICIAMENTOS DE METAIS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Processo Criminal", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Adriana", "empresa": "LMB COSMETICOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "MARK INDUSTRIA E COMERCIO DE ADITIVOS LTDA", "fase": "DOSSIE OK > AGUARD. COMITE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 500000.0, "fat": 1800000.0}, {"resp": "Danilo", "empresa": "ELFRAN INDUSTRIA E COMERCIO DE PRODUTOS METALURGICOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não demonstrou interesse", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "MULTICON EMBALAGENS E COMERCIO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições com Fundos", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "RODO GRAOS TRANSPORTES LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "BMG FOODS IMPORTACAO E EXPORTACAO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "NOSTRO BEEF ALIMENTOS IMPORTACAO E EXPORTACAO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "DELTRONIX EQUIPAMENTOS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "AUTPRO ELETRICA E AUTOMACAO LTDA EM RECUPERACAO JUDICIAL", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W12", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "DGR DISTRIBUIDORA DE PECAS E REDUTORES LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Liminar sem justificativa", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 100000.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "FS MONTAGENS E EVENTOS LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 800000.0, "fat": 2257000.0}, {"resp": "Lanael", "empresa": "EVOLUTRANS TRANSPORTES & LOGISTICA LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "SOBROSA MELLO CONSTRUTORA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 1500000.0, "fat": 5000000.0}, {"resp": "Murilo", "empresa": "EVANDRO HENRIQUE BATISTA TATUI", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 120000.0, "fat": 450000.0}, {"resp": "Adriano", "empresa": "STEEL PRODUTOS SIDERURGICOS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Informações Negativas no Mercado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "COSMETIC PRIME LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "SULLAB DISTRIB PROD DIAGNOSTICOS HOSP E FARM LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições com Fundos", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Renato", "empresa": "HRJ PRE VESTIBULAR MEDICINA LTDA", "fase": "DOSSIE OK > AGUARD. COMITE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 500000.0, "fat": 1500000.0}, {"resp": "Outros", "empresa": "UNIFOUR LOGISTICA E ARMAZENS GERAIS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não demonstrou interesse", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 300000.0, "fat": 1000000.0}, {"resp": "Fs Tatui", "empresa": "IFFA COMERCIO DE PRODUTO PARA SOLDAGEM LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "PRADO CHAVES ARQUIVOS E SISTEMAS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 700000.0, "fat": 2283199.11}, {"resp": "Adriana", "empresa": "GOPINA COMERCIAL DE FERRAMENTAS E MAQUINAS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Fs Tatui", "empresa": "KIFER COM DE FERRO E ACO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Fs Tatui", "empresa": "PRADZIA PAPEIS MG LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "KAMETAL COMERCIAL E INDUSTRIAL DE METAIS EM GERAL LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 300000.0, "fat": 950000.0}, {"resp": "Danilo", "empresa": "REFRIX ENVASADORA DE BEBIDAS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Murilo", "empresa": "CONSTELHA TELHA METALICA E TELHA SANDUICHE LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Moldes Operacionais", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 1000000.0}, {"resp": "Danilo", "empresa": "", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Murilo", "empresa": "GFERR SOROCABA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Moldes Operacionais", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 1000000.0}, {"resp": "Danilo", "empresa": "M Nehmeh Entreposto de Carnes Ltda", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "PALMONT CONSTRUCAO E MONTAGEM INDUSTRIAL LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Fs Tatui", "empresa": "MANTIQUEIRA PAPEIS E EMBALAGENS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "INDUSTRIA TEXTIL TATUI LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "AGROTEC AGROQUIMICA INDUSTRIA E COMERCIO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Danilo", "empresa": "FGS INDUSTRIA DE ARTIGOS EM PLASTICO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W11", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "JFW TRANSPORTADORA LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 1500000.0, "fat": 0.0}, {"resp": "Fs Tatui", "empresa": "ER GIRALDELLI - MATERIAL PARA CONSTRUCAO", "fase": "DOSSIE OK > AGUARD. COMITE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 200000.0, "fat": 795243.25}, {"resp": "Kruppa", "empresa": "RAFARILLO INDUSTRIA DE CALCADOS LTDA - EM RECUPERACAO JUDICIAL", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "MP RIO PRETO EQUIPAMENTOS AGRICOLAS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 500000.0, "fat": 1000000.0}, {"resp": "Kruppa", "empresa": "METALFIT INOXIDAVEIS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 0.0, "fat": 0.0}, {"resp": "Kruppa", "empresa": "TEODORO E MORAES INDUSTRIA COMERCIO E DISTRIBUIDORA DE METAIS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 0.0, "fat": 0.0}, {"resp": "Renato", "empresa": "TRANS-WAR-TRANSPORTES LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "POLIMERA INTEMEDIACAO, DISTRIBUICAO E COMERCIO DE POLIMEROS LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 1500000.0, "fat": 7050000.0}, {"resp": "Lanael", "empresa": "VALEU COMERCIO E DISTRIBUICAO LIMITADA", "fase": "CADASTRO APROVADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 1000000.0, "fat": 11870000.0}, {"resp": "Lanael", "empresa": "POLIMERA COMERCIO DE POLIMERO LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 1000000.0, "fat": 4290000.0}, {"resp": "Kruppa", "empresa": "BIONATUS LABORATÓRIO", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 2000000.0, "fat": 5500000.0}, {"resp": "Lanael", "empresa": "C.H.I EQUIPAMENTOS INDUSTRIAIS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W10", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "CALENDE EQUIPAMENTOS HIDRAULICOS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 0.0}, {"resp": "Reinaldo", "empresa": "SOMAR NUTRICAO E PROTECAO DE PLANTAS LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 500000.0, "fat": 1500000.0}, {"resp": "Reinaldo", "empresa": "VIKA INDUSTRIA DE AUTO PECAS E COMERCIO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "S4 - PRODUCOES ARTISTICAS LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 1000000.0, "fat": 2660403.67}, {"resp": "Outros", "empresa": "MEDICAMENTAL DISTRIBUIDORA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 0.0}, {"resp": "Reinaldo", "empresa": "CEU AZUL ALIMENTOS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "J W INDUSTRIA E COMERCIO DE EQUIPAMENTOS EM ACO INOXIDAVEL LTDA", "fase": "DOSSIE OK > AGUARD. COMITE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 725164.91}, {"resp": "Lanael", "empresa": "GIVOVA TRANSPORTES E LOGISTICA OCAM LTDA", "fase": "DOSSIE OK > AGUARD. COMITE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 1200000.0, "fat": 4501272.72}, {"resp": "Renato", "empresa": "EDI CARLOS BARUCHI", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 0.0, "fat": 0.0}, {"resp": "Reinaldo", "empresa": "GEO CLEAN INDUSTRIA E COMERCIO DE PRODUTOS QUIMICOS LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-03", "mesLabel": "Mar/2026", "semana": "W09", "limite": 250000.0, "fat": 860000.0}, {"resp": "Renato", "empresa": "GOLDPLAS UTILIDADES DOMESTICAS LTDA", "fase": "DOCS OK > AGUARD. DOSSIE", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 250000000.0, "fat": 218241.39}, {"resp": "Marco Barsi", "empresa": "AF2 ENGENHARIA E SERVICOS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 0.0, "fat": 0.0}, {"resp": "Adriano", "empresa": "", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "PARABELLUM COTURNOS E UNIFORMES LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Fora do estado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 400000.0, "fat": 643782.45}, {"resp": "Renato", "empresa": "DI SANTO POLIMEROS ESPECIAIS LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "M J D CONFECCOES JABOTICABAL LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "BDR RECUPERADORA DE PECAS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Informações Negativas no Mercado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W08", "limite": 400000.0, "fat": 740000.0}, {"resp": "Renato", "empresa": "MARE AGRO PATRIMONIAL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Alto endividamento", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 2000000.0, "fat": 9000000.0}, {"resp": "Renato", "empresa": "LATICINIOS P J LTDA - EM RECUPERACAO JUDICIAL", "fase": "PERDIDO", "perdido": true, "motivo": "Alto endividamento", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 2000000.0, "fat": 10000000.0}, {"resp": "Renato", "empresa": "SKINSTORE S.A.", "fase": "PERDIDO", "perdido": true, "motivo": "Taxas", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 0.0}, {"resp": "Renato", "empresa": "ESDEVA INDUSTRIA GRAFICA LTDA EM RECUPERACAO JUDICIAL", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 0.0}, {"resp": "Reinaldo", "empresa": "CEU AZUL ALIMENTOS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "ROBERTO GUIMARAES ADVOGADOS ASSOCIADOS", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 200000.0, "fat": 250000.0}, {"resp": "Lanael", "empresa": "TUDO PDV GRAFICA LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "GRAFICA TUDO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W07", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "M P COMERCIO DE AR CONDICIONADO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Fora do estado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "ANTUNES COMERCIO DE AR CONDICIONADO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Fora do estado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "A. A. VELANI ELETRICA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não demonstrou interesse", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "Felbra Distribuidora de Produtos Farmaceuticos Ltda", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 300000.0, "fat": 580000.0}, {"resp": "Lanael", "empresa": "MORETTO IMPLEMENTOS AGRICOLAS E RODOVIARIOS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Adriano", "empresa": "SOAL ESQUADRIAS LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Lanael", "empresa": "SAGATEC LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 600000.0, "fat": 1713768.0}, {"resp": "Lanael", "empresa": "SCAGRO INDUSTRIAL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 4000000.0, "fat": 23091525.41}, {"resp": "Renato", "empresa": "CERBA DESTILARIA DE ALCOOL LTDA - EM RECUPERACAO JUDICIAL", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W06", "limite": 0.0, "fat": 0.0}, {"resp": "Freiser", "empresa": "NATHALIA CARVALHO LOPES RODRIGUES", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 450000.0, "fat": 239561.08}, {"resp": "Outros", "empresa": "LCS INTERIORES MOVEIS E DECORACOES LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 1300000.0}, {"resp": "Marcos Vinicius", "empresa": "SILVA POLIMEROS LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 200000.0, "fat": 660000.0}, {"resp": "Adriano", "empresa": "NIMA COMERCIAL ELETRO LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 0.0}, {"resp": "Fernando Kruppa", "empresa": "J.B.F. PARTICIPACOES LTDA.", "fase": "PERDIDO", "perdido": true, "motivo": "Limites", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 5000000.0, "fat": 55000000.0}, {"resp": "Outros", "empresa": "VIVA PISOS E REVESTIMENTOS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 17156491.58}, {"resp": "Lanael", "empresa": "GOLDEN FENIX NEGOCIOS EMPRESARIAIS LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 350000.0, "fat": 370000.0}, {"resp": "Lanael", "empresa": "GR MODELOS PARA FUNDICAO LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 350000.0, "fat": 270000.0}, {"resp": "Lanael", "empresa": "GR MOLDES INDUSTRIA E COMERCIO LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 350000.0, "fat": 320000.0}, {"resp": "Lanael", "empresa": "SALF PRODUTOS ELETROMETALURGICOS LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 120000.0, "fat": 185000.0}, {"resp": "Lanael", "empresa": "MORETTO TRUCK CENTER LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-02", "mesLabel": "Feb/2026", "semana": "W05", "limite": 0.0, "fat": 0.0}, {"resp": "Francisco", "empresa": "VERTICAL VILLE COMERCIO EXPORTACAO E IMPORTACAO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "FLASH PINTURAS TECNICAS LTDA.", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 150000.0, "fat": 500000.0}, {"resp": "Outros", "empresa": "SONEPLAST TECNOLOGIA INDUSTRIAL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 150000.0, "fat": 500000.0}, {"resp": "Francisco", "empresa": "VILA ANASTACIO DISTRIBUIDORA DE PNEUS LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Fernando Hell", "empresa": "AUSUS AUTOMOTIVE SYSTEMS DO BRASIL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "RDS COMERCIO DE PLASTICOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Fernando Kruppa", "empresa": "SOULTECH FABRICACAO DE ARTEFATOS TEXTEIS TECNICOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 700000.0, "fat": 1900000.0}, {"resp": "Freiser", "empresa": "LEGALIZA SERVICOS TERCEIRIZADOS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "DOXS LOGISTICA INTEGRADA LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 1000000.0, "fat": 1800000.0}, {"resp": "Outros", "empresa": "SAFRA COTTON LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 450000.0, "fat": 1500000.0}, {"resp": "Freiser", "empresa": "JULIA CUNHA RIBEIRO", "fase": "PERDIDO", "perdido": true, "motivo": "Menor que 2 anos", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 250000.0, "fat": 700000.0}, {"resp": "Outros", "empresa": "VENDE FORTE DISTRIBUIDORA DE ALIMENTOS LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 200000.0, "fat": 819532.95}, {"resp": "Fernando Kruppa", "empresa": "PROQUITEC INDUSTRIA DE PRODUTOS QUIMICOS E REPRESENTACAO COMERCIAL S.A EM RECUPERACAO JUDICIAL", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "METALYTE SERVICOS E COMERCIO LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Fernando Kruppa", "empresa": "HARPIA AGROINDUSTRIA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Moldes Operacionais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "SIDNEI JOSE MARTINS GUIRADO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 300000.0, "fat": 938856.21}, {"resp": "Outros", "empresa": "SILVA & MARQUES - COMERCIO E INDUSTRIA DE TINTAS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "PORTO IMOVEIS E CONSTRUCOES LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 55000.0, "fat": 184289.52}, {"resp": "Carlos", "empresa": "SAFIRA MEDICAL TECHNOLOGY LTDA", "fase": "CONTRATO ENVIADO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 110000.0, "fat": 360000.0}, {"resp": "Carlos", "empresa": "JF TATUI COMERCIO E IMPORTACAO DE PECAS E ACESSORIOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 150000.0, "fat": 500000.0}, {"resp": "Outros", "empresa": "JADE INDUSTRIA E COMERCIO DE EMBALAGENS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "INDUSTRIA E COMERCIO DE PLASTICOS PLASMARC LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não demonstrou interesse", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "DESATADORA PLASTICOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Menor que 2 anos", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 800000.0, "fat": 1800000.0}, {"resp": "Outros", "empresa": "L C SOLUCOES EM MOBILIARIO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Sem Contato", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 1100000.0}, {"resp": "Outros", "empresa": "AGUIA PALLETS INDUSTRIA E COMERCIO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Taxas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 4300000.0}, {"resp": "Outros", "empresa": "PACK TO YOU INDUSTRIA E COMERCIO DE COSMETICOS LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 3900000.0}, {"resp": "Outros", "empresa": "MIPAL INDUSTRIA DE EVAPORADORES LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "STORE SOROCABA BRASIL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 900000.0}, {"resp": "Outros", "empresa": "MVM INDUSTRIA E COMERCIO DE PECAS LTDA", "fase": "STARTADOS > AGUARD. DOCS", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 3000000.0}, {"resp": "Outros", "empresa": "BELA ETIQUETAS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 80000.0, "fat": 400000.0}, {"resp": "Outros", "empresa": "KOINONIA FITAS E PECAS TECNICAS DE ESPUMAS LTDA", "fase": "ENVIAR PARA OPERAÇÕES", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 0.0}, {"resp": "Outros", "empresa": "ASTRA MAQUINAS E EQUIPAMENTOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Cliente declinou", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W04", "limite": 0.0, "fat": 380000.0}, {"resp": "Carlos", "empresa": "AGROTOP COMERCIO DE INSUMOS AGRICOLAS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Fora do estado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W03", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "TRIADE TEXTIL INDUSTRIA E COMERCIO, IMPORTACAO E EXPORTACAO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W03", "limite": 150000.0, "fat": 500000.0}, {"resp": "Carlos", "empresa": "FRAGA COMERCIO DE RESINAS E INJETADOS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 150000.0, "fat": 500000.0}, {"resp": "Carlos", "empresa": "PONTIX CHEMICAL BRASIL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Vínculo com Cedente", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "CARBONATO FERTILIZANTES E BENEFICIAMENTO DE MINERAIS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições com Fundos", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 650000.0, "fat": 2300000.0}, {"resp": "Carlos", "empresa": "NUTRIFOL COMERCIO DE FERTILIZANTES LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "LG AGRONEGOCIO LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Menor que 2 anos", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 0.0, "fat": 0.0}, {"resp": "Carlos", "empresa": "STYLE COMERCIAL LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Não retornou mais", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 450000.0, "fat": 1700000.0}, {"resp": "Carlos", "empresa": "FIAGRO-FABRICA DE IMPLEMENTOS AGRICOLAS OLIMPIA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 180000.0, "fat": 600000.0}, {"resp": "Carlos", "empresa": "RESERVATORIOS METALICOS OLIMPIA LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Restrições Execessivas", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 420000.0, "fat": 1400000.0}, {"resp": "Carlos", "empresa": "ROMA COMERCIO E REPRESENTACOES AGRICOLA LTDA", "fase": "DOCUMENTAÇÃO CRÍTICA", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 720000.0, "fat": 2400000.0}, {"resp": "Carlos", "empresa": "DOMME SHOES INDUSTRIA E COMERCIO DE CALCADOS LTDA", "fase": "EMISSÃO DO CONTRATO", "perdido": false, "motivo": "Sem motivo informado", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 100000.0, "fat": 1000000.0}, {"resp": "Carlos", "empresa": "UNIFOUR LOGISTICA E ARMAZENS GERAIS LTDA", "fase": "PERDIDO", "perdido": true, "motivo": "Limites", "mesKey": "2026-01", "mesLabel": "Jan/2026", "semana": "W01", "limite": 300000.0, "fat": 1000000.0}];
+
+const FLABEL={'STARTADOS > AGUARD. DOCS':'Startados / Ag. Docs','DOCUMENTAÇÃO CRÍTICA':'Doc. Crítica','CONTRATO ENVIADO':'Contrato Enviado','DOSSIE OK > AGUARD. COMITE':'Dossie OK / Comitê','EMISSÃO DO CONTRATO':'Emissão Contrato','CADASTRO APROVADO':'Cadastro Aprovado','ENVIAR PARA OPERAÇÕES':'Enviar p/ Operações','ANÁLISE BACKOFFICE':'Análise Backoffice','DOCS OK > AGUARD. DOSSIE':'Docs OK / Ag. Dossie','PERDIDO':'Perdido'};
+const FORDER=['STARTADOS > AGUARD. DOCS','DOCUMENTAÇÃO CRÍTICA','CONTRATO ENVIADO','DOSSIE OK > AGUARD. COMITE','DOCS OK > AGUARD. DOSSIE','EMISSÃO DO CONTRATO','ENVIAR PARA OPERAÇÕES','ANÁLISE BACKOFFICE','CADASTRO APROVADO'];
+const FCOLORS=['fb-0','fb-1','fb-2','fb-3','fb-7','fb-4','fb-5','fb-6','fb-8'];
+const GC='rgba(0,0,0,0.05)',TC='#9E9E98';
+let charts={};
+
+function fmtM(v){if(!v)return'—';if(v>=1e6)return'R$ '+(v/1e6).toFixed(1)+'M';if(v>=1e3)return'R$ '+(v/1e3).toFixed(0)+'k';return'R$ '+v.toFixed(0);}
+function pc(v){if(!v)return'pill p0';if(v<=2)return'pill pl';if(v<=5)return'pill pm';if(v<=10)return'pill ph';return'pill pt';}
+function uniq(arr){return[...new Set(arr)].filter(Boolean).sort();}
+function filtR(rows,resp,mes,perdido){
+  let r=rows;
+  if(perdido!==null)r=r.filter(x=>x.perdido===perdido);
+  if(resp)r=r.filter(x=>x.resp===resp);
+  if(mes)r=r.filter(x=>x.mesKey===mes);
+  return r;
+}
+function showPage(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');el.classList.add('active');}
+
+function populateSelects(rows){
+  const ativos=rows.filter(r=>!r.perdido), perdidos=rows.filter(r=>r.perdido);
+  const resps=uniq(rows.map(r=>r.resp));
+  const meses=uniq(rows.map(r=>r.mesKey));
+  const ml={};rows.forEach(r=>{if(r.mesKey)ml[r.mesKey]=r.mesLabel;});
+  const motivos=uniq(perdidos.map(r=>r.motivo));
+
+  ['fOvResp','fMxResp','fMoResp','fEmResp','fPdResp'].forEach(id=>{
+    const s=document.getElementById(id),cur=s.value;
+    s.innerHTML='<option value="">Todos</option>';
+    resps.forEach(r=>s.innerHTML+=`<option value="${r}">${r}</option>`);
+    if(cur)s.value=cur;
+  });
+  ['fMxMes','fMoMes','fEmMes','fPdMes'].forEach(id=>{
+    const s=document.getElementById(id),cur=s.value;
+    s.innerHTML='<option value="">Todos os meses</option>';
+    meses.forEach(k=>s.innerHTML+=`<option value="${k}">${ml[k]}</option>`);
+    if(cur)s.value=cur;
+  });
+  const sm=document.getElementById('fPdMotivo'),cur=sm.value;
+  sm.innerHTML='<option value="">Todos os motivos</option>';
+  motivos.forEach(m=>sm.innerHTML+=`<option value="${m}">${m}</option>`);
+  if(cur)sm.value=cur;
+}
+
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function renderOv(){
+  const resp=document.getElementById('fOvResp').value;
+  const allRows=resp?ROWS.filter(r=>r.resp===resp):ROWS;
+  const ativos=allRows.filter(r=>!r.perdido);
+  const perdidos=allRows.filter(r=>r.perdido);
+  const total=allRows.length;
+  const taxa=total>0?Math.round(ativos.length/total*100):0;
+
+  document.getElementById('kN').textContent=ativos.length;
+  document.getElementById('kL').textContent=fmtM(ativos.reduce((a,r)=>a+r.limite,0));
+  document.getElementById('kF').textContent=fmtM(ativos.reduce((a,r)=>a+r.fat,0));
+  document.getElementById('kP').textContent=perdidos.length;
+  document.getElementById('kPsub').textContent=`${100-taxa}% do total`;
+  document.getElementById('kT').textContent=taxa+'%';
+
+  // Funil (ativos only)
+  const fMap={};ativos.forEach(r=>{fMap[r.fase]=(fMap[r.fase]||0)+1;});
+  const fases=FORDER.filter(f=>fMap[f]);
+
+  // Semanas (ativos)
+  const sMap={};ativos.forEach(r=>{if(r.semana)sMap[r.semana]=(sMap[r.semana]||0)+1;});
+  const sKeys=Object.keys(sMap).sort();
+
+  // Resp chart
+  const rMap={},pMap={},lMap={};
+  allRows.forEach(r=>{
+    if(!r.perdido){rMap[r.resp]=(rMap[r.resp]||0)+1;lMap[r.resp]=(lMap[r.resp]||0)+r.limite;}
+    else pMap[r.resp]=(pMap[r.resp]||0)+1;
+  });
+  const allResps=uniq([...Object.keys(rMap),...Object.keys(pMap)]);
+  const sorted=allResps.sort((a,b)=>((rMap[b]||0)+(pMap[b]||0))-((rMap[a]||0)+(pMap[a]||0))).slice(0,10);
+
+  // Motivos (perdidos)
+  const mMap={};perdidos.forEach(r=>{mMap[r.motivo]=(mMap[r.motivo]||0)+1;});
+  const topMotivos=Object.entries(mMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
+
+  ['funil','pie','resp','sem','motivo'].forEach(k=>destroyChart(k));
+
+  charts.funil=new Chart(document.getElementById('cFunil'),{type:'bar',data:{labels:fases.map(f=>FLABEL[f]||f),datasets:[{label:'Negócios',data:fases.map(f=>fMap[f]),backgroundColor:'#2563EB',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} negócios`}}},scales:{x:{grid:{color:GC},ticks:{color:TC},border:{display:false}},y:{grid:{display:false},ticks:{color:TC,font:{size:12}},border:{display:false}}}}});
+
+  charts.pie=new Chart(document.getElementById('cPie'),{type:'doughnut',data:{labels:['Ativos','Perdidos'],datasets:[{data:[ativos.length,perdidos.length],backgroundColor:['#0F9E6E','#D03B3B'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:TC,font:{size:12},padding:16}},tooltip:{callbacks:{label:c=>{const pct=Math.round(c.raw/(ativos.length+perdidos.length)*100);return ` ${c.raw} (${pct}%)`;}}}}}});
+
+  charts.resp=new Chart(document.getElementById('cResp'),{type:'bar',data:{labels:sorted,datasets:[{label:'Ativos',data:sorted.map(r=>rMap[r]||0),backgroundColor:'#0F9E6E',borderRadius:3,borderSkipped:false,yAxisID:'y1'},{label:'Perdidos',data:sorted.map(r=>pMap[r]||0),backgroundColor:'#D03B3B',borderRadius:3,borderSkipped:false,yAxisID:'y1'},{label:'Limite',data:sorted.map(r=>Math.round((lMap[r]||0)/1e4)/100),backgroundColor:'#2563EB',borderRadius:3,borderSkipped:false,yAxisID:'y2'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex<2?` ${c.raw} negócios`:` R$ ${c.raw.toFixed(2)}M`}}},scales:{x:{display:false,stacked:false},y1:{grid:{display:false},ticks:{color:TC,font:{size:12}},border:{display:false},position:'left'},y2:{display:false,position:'right'}}}});
+
+  charts.sem=new Chart(document.getElementById('cSem'),{type:'bar',data:{labels:sKeys,datasets:[{label:'Novos',data:sKeys.map(k=>sMap[k]),backgroundColor:'#C47A12',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} negócios`}}},scales:{x:{grid:{display:false},ticks:{color:TC,autoSkip:false,maxRotation:0},border:{display:false}},y:{grid:{color:GC},ticks:{color:TC,stepSize:5},border:{display:false}}}}});
+
+  charts.motivo=new Chart(document.getElementById('cMotivo'),{type:'bar',data:{labels:topMotivos.map(([k])=>k.length>22?k.slice(0,22)+'…':k),datasets:[{label:'Negócios',data:topMotivos.map(([,v])=>v),backgroundColor:'#D03B3B',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} negócios`}}},scales:{x:{grid:{color:GC},ticks:{color:TC,stepSize:1},border:{display:false}},y:{grid:{display:false},ticks:{color:TC,font:{size:11}},border:{display:false}}}}});
+}
+
+function renderMx(){
+  const resp=document.getElementById('fMxResp').value,mes=document.getElementById('fMxMes').value;
+  let rows=ROWS.filter(r=>!r.perdido);
+  if(resp)rows=rows.filter(r=>r.resp===resp);
+  if(mes)rows=rows.filter(r=>r.mesKey===mes);
+  const faseSet=new Set(),respSet=new Set(),mx={};
+  rows.forEach(r=>{faseSet.add(r.fase);respSet.add(r.resp);if(!mx[r.resp])mx[r.resp]={};mx[r.resp][r.fase]=(mx[r.resp][r.fase]||0)+1;});
+  const fases=FORDER.filter(f=>faseSet.has(f));
+  const resps=[...respSet].sort((a,b)=>Object.values(mx[b]).reduce((x,y)=>x+y,0)-Object.values(mx[a]).reduce((x,y)=>x+y,0));
+  if(!resps.length){document.getElementById('tMx').innerHTML='<tr><td style="padding:32px;color:var(--t3);text-align:center">Nenhum registro</td></tr>';return;}
+  let h='<thead><tr><th>Responsável</th>';
+  fases.forEach(f=>h+=`<th class="c">${FLABEL[f]||f}</th>`);
+  h+='<th class="c">Total</th></tr></thead><tbody>';
+  resps.forEach(r=>{
+    const tot=fases.reduce((a,f)=>a+(mx[r][f]||0),0);
+    h+=`<tr><td class="nm">${r}</td>`;
+    fases.forEach(f=>{const v=mx[r][f]||0;h+=`<td class="c"><span class="${pc(v)}">${v||'—'}</span></td>`;});
+    h+=`<td class="c"><strong>${tot}</strong></td></tr>`;
+  });
+  document.getElementById('tMx').innerHTML=h+'</tbody>';
+}
+
+function renderMo(){
+  const resp=document.getElementById('fMoResp').value,mes=document.getElementById('fMoMes').value;
+  let rows=ROWS.filter(r=>!r.perdido);
+  if(resp)rows=rows.filter(r=>r.resp===resp);
+  if(mes)rows=rows.filter(r=>r.mesKey===mes);
+  if(!rows.length){document.getElementById('tMo').innerHTML='<tr><td style="padding:32px;color:var(--t3);text-align:center">Nenhum registro</td></tr>';return;}
+  const byMes={};
+  rows.forEach(r=>{if(!byMes[r.mesKey])byMes[r.mesKey]={label:r.mesLabel,byResp:{}};if(!byMes[r.mesKey].byResp[r.resp])byMes[r.mesKey].byResp[r.resp]={n:0,l:0};byMes[r.mesKey].byResp[r.resp].n++;byMes[r.mesKey].byResp[r.resp].l+=r.limite;});
+  const maxNeg=Math.max(1,...Object.values(byMes).flatMap(m=>Object.values(m.byResp).map(v=>v.n)));
+  const maxLim=Math.max(1,...Object.values(byMes).flatMap(m=>Object.values(m.byResp).map(v=>v.l)));
+  let h='<thead><tr><th>Responsável</th><th>Mês</th><th class="r">Negócios</th><th class="r" style="min-width:180px">Limite esperado</th></tr></thead><tbody>';
+  Object.entries(byMes).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([key,{label,byResp}])=>{
+    const totN=Object.values(byResp).reduce((a,v)=>a+v.n,0),totL=Object.values(byResp).reduce((a,v)=>a+v.l,0);
+    h+=`<tr class="mr"><td class="mh" colspan="2">${label}</td><td class="mh r">${totN} negócios</td><td class="mh r">${fmtM(totL)}</td></tr>`;
+    Object.entries(byResp).sort((a,b)=>b[1].n-a[1].n).forEach(([r,{n,l}])=>{
+      h+=`<tr><td class="nm">${r}</td><td style="color:var(--t3);font-size:12px">${label}</td>
+        <td class="r"><div class="bi" style="justify-content:flex-end"><div class="bt"><div class="bf g" style="width:${Math.round(n/maxNeg*100)}%"></div></div><span style="min-width:20px;text-align:right">${n}</span></div></td>
+        <td class="r"><div class="bi" style="justify-content:flex-end"><div class="bt"><div class="bf" style="width:${Math.round(l/maxLim*100)}%"></div></div><span style="min-width:80px;text-align:right">${fmtM(l)}</span></div></td></tr>`;
+    });
+  });
+  document.getElementById('tMo').innerHTML=h+'</tbody>';
+}
+
+function renderEm(){
+  const resp=document.getElementById('fEmResp').value,mes=document.getElementById('fEmMes').value;
+  const search=(document.getElementById('empSearch').value||'').toLowerCase().trim();
+  let rows=ROWS.filter(r=>!r.perdido);
+  if(resp)rows=rows.filter(r=>r.resp===resp);
+  if(mes)rows=rows.filter(r=>r.mesKey===mes);
+  if(search)rows=rows.filter(r=>r.empresa.toLowerCase().includes(search));
+  const container=document.getElementById('empContainer');
+  if(!rows.length){container.innerHTML='<div class="empty">Nenhuma empresa encontrada</div>';return;}
+  const byResp={};rows.forEach(r=>{if(!byResp[r.resp])byResp[r.resp]=[];byResp[r.resp].push(r);});
+  const respsOrdered=Object.keys(byResp).sort((a,b)=>byResp[b].length-byResp[a].length);
+  if(resp){
+    const empRows=byResp[resp]||[];
+    let h=`<div class="card cfull"><div class="ctitle">${resp}</div><div class="csub">${empRows.length} empresa${empRows.length!==1?'s':''} em carteira</div><div class="tscroll"><table><thead><tr><th>#</th><th>Empresa</th><th>Fase</th><th>Mês</th><th class="r">Limite esperado</th></tr></thead><tbody>`;
+    empRows.forEach((r,i)=>{const fi=FORDER.indexOf(r.fase);const fcls=fi>=0?FCOLORS[fi]:'fb-0';h+=`<tr><td style="color:var(--t3);font-size:12px;width:32px">${i+1}</td><td class="nm">${r.empresa||'—'}</td><td><span class="fase-badge ${fcls}">${FLABEL[r.fase]||r.fase}</span></td><td style="color:var(--t3);font-size:12px">${r.mesLabel||'—'}</td><td class="r">${fmtM(r.limite)}</td></tr>`;});
+    container.innerHTML=h+'</tbody></table></div></div>';
+  } else {
+    let h='<div class="resp-grid">';
+    respsOrdered.forEach(r=>{
+      const empRows=byResp[r];
+      h+=`<div class="resp-card"><div class="resp-card-header"><span>${r}</span><small>${empRows.length} empresa${empRows.length!==1?'s':''}</small></div><div class="emp-list">`;
+      empRows.forEach(row=>{const fi=FORDER.indexOf(row.fase);const fcls=fi>=0?FCOLORS[fi]:'fb-0';h+=`<div class="emp-row"><div class="emp-name">${row.empresa||'—'}</div><div class="emp-meta"><span class="fase-badge ${fcls}">${FLABEL[row.fase]||row.fase}</span>${row.limite?`<span style="font-size:11px;color:var(--t3)">${fmtM(row.limite)}</span>`:''}</div></div>`;});
+      h+='</div></div>';
+    });
+    container.innerHTML=h+'</div>';
+  }
+}
+
+function renderPd(){
+  const resp=document.getElementById('fPdResp').value;
+  const motivo=document.getElementById('fPdMotivo').value;
+  const mes=document.getElementById('fPdMes').value;
+  let rows=ROWS.filter(r=>r.perdido);
+  if(resp)rows=rows.filter(r=>r.resp===resp);
+  if(motivo)rows=rows.filter(r=>r.motivo===motivo);
+  if(mes)rows=rows.filter(r=>r.mesKey===mes);
+
+  // KPIs
+  const mMap={},rMap={};
+  rows.forEach(r=>{mMap[r.motivo]=(mMap[r.motivo]||0)+1;rMap[r.resp]=(rMap[r.resp]||0)+1;});
+  const topMotivo=Object.entries(mMap).sort((a,b)=>b[1]-a[1])[0];
+  const topResp=Object.entries(rMap).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('pdKpis').innerHTML=`
+    <div class="card danger-card"><div class="klabel">Total perdidos</div><div class="kval danger">${rows.length}</div><div class="ksub">Negócios com fase perdido</div></div>
+    <div class="card danger-card"><div class="klabel">Principal motivo</div><div class="kval" style="font-size:15px;line-height:1.3">${topMotivo?topMotivo[0]:'—'}</div><div class="ksub">${topMotivo?topMotivo[1]+' ocorrências':''}</div></div>
+    <div class="card danger-card"><div class="klabel">Responsável c/ mais perdas</div><div class="kval" style="font-size:18px">${topResp?topResp[0]:'—'}</div><div class="ksub">${topResp?topResp[1]+' negócios perdidos':''}</div></div>`;
+
+  document.getElementById('pdSubtitle').textContent=`${rows.length} negócio${rows.length!==1?'s':''} perdido${rows.length!==1?'s':''}`;
+
+  // Charts
+  const sortedM=Object.entries(mMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const sortedR=Object.entries(rMap).sort((a,b)=>b[1]-a[1]);
+  ['pdMotivo','pdResp'].forEach(k=>destroyChart(k));
+
+  charts.pdMotivo=new Chart(document.getElementById('cPdMotivo'),{type:'bar',data:{labels:sortedM.map(([k])=>k.length>25?k.slice(0,25)+'…':k),datasets:[{label:'Negócios',data:sortedM.map(([,v])=>v),backgroundColor:'#D03B3B',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} negócios`,title:t=>{const orig=sortedM[t[0].dataIndex][0];return orig;}}}},scales:{x:{grid:{color:GC},ticks:{color:TC,stepSize:1},border:{display:false}},y:{grid:{display:false},ticks:{color:TC,font:{size:11}},border:{display:false}}}}});
+
+  charts.pdResp=new Chart(document.getElementById('cPdResp'),{type:'bar',data:{labels:sortedR.map(([k])=>k),datasets:[{label:'Perdidos',data:sortedR.map(([,v])=>v),backgroundColor:'#D03B3B',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} perdidos`}}},scales:{x:{grid:{color:GC},ticks:{color:TC,stepSize:1},border:{display:false}},y:{grid:{display:false},ticks:{color:TC,font:{size:12}},border:{display:false}}}}});
+
+  // Table
+  if(!rows.length){document.getElementById('tPd').innerHTML='<tr><td style="padding:32px;color:var(--t3);text-align:center">Nenhum registro encontrado</td></tr>';return;}
+  let h='<thead><tr><th>#</th><th>Empresa</th><th>Responsável</th><th>Motivo da perda</th><th>Mês</th><th class="r">Limite esperado</th></tr></thead><tbody>';
+  rows.forEach((r,i)=>{
+    h+=`<tr>
+      <td style="color:var(--t3);font-size:12px;width:32px">${i+1}</td>
+      <td class="nm">${r.empresa||'—'}</td>
+      <td>${r.resp}</td>
+      <td><span class="motivo-badge">${r.motivo}</span></td>
+      <td style="color:var(--t3);font-size:12px">${r.mesLabel||'—'}</td>
+      <td class="r">${fmtM(r.limite)}</td>
+    </tr>`;
+  });
+  document.getElementById('tPd').innerHTML=h+'</tbody>';
+}
+
+function parseBRL(v){if(!v)return 0;return parseFloat(v.replace('R$','').replace(/\./g,'').replace(',','.').trim())||0;}
+function extractResp(v){const m=v.match(/PROSPEC[CÇ][AÃ]O DO (.+)/i);return m?m[1].trim().split(' ').map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join(' '):'Outros';}
+function parseMesKey(v){if(!v)return{key:'',label:''};const p=v.split('/');if(p.length<3)return{key:'',label:''};const d=new Date(+p[2],+p[1]-1,+p[0]);return{key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),label:d.toLocaleString('pt-BR',{month:'short'}).replace('.','').replace(/^./,c=>c.toUpperCase())+'/'+d.getFullYear()};}
+function parseSem(v){if(!v)return'';const p=v.split('/');if(p.length<3)return'';const d=new Date(+p[2],+p[1]-1,+p[0]);const s=new Date(d.getFullYear(),0,1);return'W'+String(Math.ceil(((d-s)/86400000+s.getDay()+1)/7)).padStart(2,'0');}
+
+function loadFile(event){
+  const file=event.target.files[0];if(!file)return;
+  document.getElementById('hsub').textContent='Carregando '+file.name+'...';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const html=new TextDecoder('utf-8').decode(new Uint8Array(e.target.result));
+      const doc=new DOMParser().parseFromString(html,'text/html');
+      const rows=Array.from(doc.querySelectorAll('tr'));
+      if(rows.length<2){alert('Arquivo não reconhecido.');return;}
+      const headers=Array.from(rows[0].querySelectorAll('td,th')).map(td=>td.textContent.trim());
+      const cFase=headers.indexOf('Fase'),cNome=headers.indexOf('Nome do negócio'),cEmp=headers.indexOf('Empresa');
+      const cIni=headers.indexOf('Data de início'),cLim=headers.findIndex(h=>h.includes('Limite Esperado')&&h.startsWith('02')),cFat=headers.findIndex(h=>h.includes('Faturamento Mensal'));
+      const cMotivo=headers.findIndex(h=>h.includes('Motivo de Perda')&&h.startsWith('02'));
+      if(cFase<0||cNome<0){alert('Colunas não encontradas.');return;}
+      const newRows=[];
+      for(let i=1;i<rows.length;i++){
+        const cells=Array.from(rows[i].querySelectorAll('td,th')).map(td=>td.textContent.trim());
+        if(cells.length<5)continue;
+        const ini=cells[cIni]||'';const{key,label}=parseMesKey(ini);
+        const fase=cells[cFase]||'';
+        const perdido=fase==='PERDIDO';
+        const motivo=cMotivo>=0&&cells[cMotivo]?cells[cMotivo]:'Sem motivo informado';
+        newRows.push({resp:extractResp(cells[cNome]||''),empresa:cEmp>=0?cells[cEmp]||'':'',fase,perdido,motivo,mesKey:key,mesLabel:label,semana:parseSem(ini),limite:cLim>=0?parseBRL(cells[cLim]):0,fat:cFat>=0?parseBRL(cells[cFat]):0});
+      }
+      ROWS=newRows;
+      populateSelects(ROWS);
+      renderOv();renderMx();renderMo();renderEm();renderPd();
+      document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleString('pt-BR');
+      document.getElementById('hsub').textContent='Pipeline Backoffice — '+file.name;
+    }catch(err){alert('Erro: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+populateSelects(ROWS);
+renderOv();renderMx();renderMo();renderEm();renderPd();
+document.getElementById('lupd').textContent='Exportação: 10/04/2026';
+</script>
+</body>
+</html>
